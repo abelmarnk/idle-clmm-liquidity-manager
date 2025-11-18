@@ -1,0 +1,32 @@
+[package]
+name = "strategy"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "strategy"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+
+
+[dependencies]
+anchor-lang = {version = "0.31.1", features = ["init-if-needed"]}
+anchor-spl = {version = "0.31.1"}
+bytemuck = "1.24.0"
+# mercurial-vault = {path = "../../../../../Github/vault/programs/vault", features = ["no-entrypoint"]}
+raydium-amm-v3 = {git = "https://github.com/raydium-io/raydium-clmm", branch = "master", package = "raydium-amm-v3", features = ["no-entrypoint", "devnet"]}
+
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }
