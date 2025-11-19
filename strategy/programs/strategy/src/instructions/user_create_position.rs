@@ -318,7 +318,26 @@ pub fn user_create_position_from_raydium_handler(
         pool_state.token_mint_1, 
         StrategyError::DestinationMintNotWhitelisted
     );    
-    
+
+
+    require!(
+        ctx.accounts.position_state.tick_lower_index.gt(&args.tick_lower_index_in_threshold)
+        &&
+        ctx.accounts.position_state.tick_lower_index.gt(&args.tick_lower_index_out_threshold)
+        && 
+        args.tick_lower_index_out_threshold.le(&args.tick_lower_index_in_threshold),
+        StrategyError::InvalidTickThresholdProvided
+    );
+
+    require!(
+        ctx.accounts.position_state.tick_upper_index.lt(&args.tick_lower_index_in_threshold)
+        &&
+        ctx.accounts.position_state.tick_lower_index.lt(&args.tick_lower_index_out_threshold)
+        && 
+        args.tick_upper_index_out_threshold.ge(&args.tick_upper_index_in_threshold),
+        StrategyError::InvalidTickThresholdProvided
+    );
+
     ctx.accounts.user_state.initialize(
         ctx.accounts.user.key,
         ctx.accounts.position_state.tick_lower_index,
@@ -338,8 +357,8 @@ pub fn user_create_position_from_raydium_handler(
         ctx.accounts.user_mint.to_account_info(),                
         ctx.accounts.user_state_token_account.to_account_info(),  
         ctx.accounts.token_program.to_account_info(),             
-        1,                                                       
-        0,                                                     
+        1, // NFT                                                       
+        0, // NFT                                                    
         &[],                                               
     )?;
 

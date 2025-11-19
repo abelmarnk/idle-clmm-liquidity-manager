@@ -98,7 +98,7 @@ pub fn keeper_increase_liquidity_position_handler<'a, 'b, 'c, 'info>(
         &[user_state_account.bump]
     ]];
 
-    increase_liquidity(
+    let is_out_of_range = increase_liquidity(
             raydium_accounts,
             user_state_account,
             expected_token_account,
@@ -110,7 +110,7 @@ pub fn keeper_increase_liquidity_position_handler<'a, 'b, 'c, 'info>(
 
     // Reward the bot with credits
     global_state.
-        add_increase_liquidity_credits_for_keeper(&mut ctx.accounts.keeper_account)?;
+        add_increase_liquidity_credits_for_keeper(&mut ctx.accounts.keeper_account, is_out_of_range)?;
    
     user_state_account.set_not_deployed();
 
@@ -198,7 +198,6 @@ pub fn increase_liquidity<'info>(
     // We only pull out the relevant accounts we need for validation, the structure is taken from here:-
     // https://github.com/raydium-io/raydium-clmm/blob/master/programs/amm/src/instructions/increase_liquidity_v2.rs#L9
    
-    // Check if the current tick is inside of the user defined thresholds
     let pool_state_account = &raydium_accounts[RAYDIUM_INCREASE_POOL_STATE_ACCOUNT_OFFSET];
     let global_state_account = &raydium_accounts[RAYDIUM_INCREASE_USER_STATE_ACCOUNT_OFFSET];
 
@@ -206,7 +205,6 @@ pub fn increase_liquidity<'info>(
     let token_0_amount;
     let token_1_amount;
     let base_flag;
-    let force_pull = force_pull;
     let is_within_range;
     let is_within_threshold_range;
 
@@ -336,7 +334,7 @@ pub fn increase_liquidity<'info>(
         Some(user_state_account.key()),
     )?;
 
-    Ok(true)
+    Ok(!is_within_range)
 }
 
 /*

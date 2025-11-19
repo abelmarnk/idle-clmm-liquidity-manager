@@ -22,8 +22,7 @@ impl KeeperState{
 }
 
 #[test]
-fn test_initialize(){
-    // If a field is changed, added or removed, this should err.
+fn test_keeper_state(){
     let _ = KeeperState{
         keeper:Pubkey::default(),
         credits:u64::default()

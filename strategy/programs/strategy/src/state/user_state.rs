@@ -145,3 +145,23 @@ impl UserState {
         Ok(())
     }
 }
+
+#[test]
+fn test_user_state() {
+    let _ = UserState {
+        user: Pubkey::default(),
+        user_mint: Pubkey::default(),
+        token_deployed: TokenDeployed::NoTokenDeployed,
+        amount_deposited_into_vault: u64::default(),
+        tick_lower_index: i32::default(),
+        tick_upper_index: i32::default(),
+        liquidity: u128::default(),
+        lp_amount: u64::default(),
+        tick_lower_index_out_threshold: i32::default(),
+        tick_upper_index_out_threshold: i32::default(),
+        tick_lower_index_in_threshold: i32::default(),
+        tick_upper_index_in_threshold: i32::default(),
+        bump: u8::default(),
+        reserved: [0u8; 127],
+    };
+}

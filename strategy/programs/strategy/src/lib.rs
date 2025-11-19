@@ -43,7 +43,6 @@ pub mod strategy {
         create_keeper_account_handler(ctx)
     }
 
-    #[instruction(discriminator = 1)]
     pub fn keeper_increase_liquidity_position<'a, 'b, 'c, 'info>(ctx:Context<'a, 'b, 'c, 'info, KeeperIncreaseLiquidityPositionAccounts<'info>>, args:KeeperIncreaseLiquidityPositionArgs)->Result<()>{
         keeper_increase_liquidity_position_handler(ctx, args)
     }

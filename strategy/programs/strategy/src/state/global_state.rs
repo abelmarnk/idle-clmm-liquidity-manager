@@ -1,4 +1,4 @@
-use std::ops::{Sub};
+use std::ops::{Add, Div, Sub};
 
 use anchor_lang::prelude::*;
 use crate::{constants::ALL_BASIS_POINTS, error::StrategyError, state::KeeperState};
@@ -51,14 +51,13 @@ impl GlobalState{
     }
 
     pub fn add_decrease_liquidity_credits_for_keeper(&self, keeper:&mut Account<'_, KeeperState>)->Result<()>{
-        keeper.credits = keeper.credits.checked_add(self.credits_for_decrease_liquidity).
-            ok_or(ProgramError::ArithmeticOverflow)?;
+        keeper.credits = keeper.credits.add(self.credits_for_decrease_liquidity);
         Ok(())
     }
 
-    pub fn add_increase_liquidity_credits_for_keeper(&self, keeper:&mut Account<'_, KeeperState>)->Result<()>{
-        keeper.credits = keeper.credits.checked_add(self.credits_for_increase_liquidity).
-            ok_or(ProgramError::ArithmeticOverflow)?;
+    pub fn add_increase_liquidity_credits_for_keeper(&self, keeper:&mut Account<'_, KeeperState>, is_out_of_range:bool)->Result<()>{
+        let credits = if is_out_of_range {self.credits_for_increase_liquidity} else {self.credits_for_increase_liquidity.div(2)};
+        keeper.credits = keeper.credits.add(credits);
         Ok(())
     }
 
@@ -116,8 +115,7 @@ impl WhitelistState {
 }
 
 #[test]
-fn test_initialize(){
-    // If a field is changed, added or removed, this should err.
+fn test_global_state(){
     let _ = GlobalState{
         state: u8::default(),
         admin: Pubkey::default(),
@@ -132,3 +130,9 @@ fn test_initialize(){
     };
 }
 
+#[test]
+fn test_whitelist_state(){
+    _ = WhitelistState{
+        mint: Pubkey::default()
+    }
+}
