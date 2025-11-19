@@ -330,9 +330,9 @@ pub fn user_create_position_from_raydium_handler(
     );
 
     require!(
-        ctx.accounts.position_state.tick_upper_index.lt(&args.tick_lower_index_in_threshold)
+        ctx.accounts.position_state.tick_upper_index.lt(&args.tick_upper_index_in_threshold)
         &&
-        ctx.accounts.position_state.tick_lower_index.lt(&args.tick_lower_index_out_threshold)
+        ctx.accounts.position_state.tick_upper_index.lt(&args.tick_upper_index_out_threshold)
         && 
         args.tick_upper_index_out_threshold.ge(&args.tick_upper_index_in_threshold),
         StrategyError::InvalidTickThresholdProvided
