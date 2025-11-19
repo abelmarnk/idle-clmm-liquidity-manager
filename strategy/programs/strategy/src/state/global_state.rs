@@ -69,7 +69,7 @@ impl GlobalState{
             // Calculate fee on the increase
             let diff = amount_after.sub(amount_before);
             let fee = diff.checked_mul(u64::from(self.fee_basis_points))
-                .and_then(|v| v.div(ALL_BASIS_POINTS))
+                .and_then(|v| Some(v.div(ALL_BASIS_POINTS)))
                 .ok_or(StrategyError::NumericalOverflow)?;
             Ok(amount_after.sub(fee))
         }
