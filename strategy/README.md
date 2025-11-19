@@ -13,8 +13,10 @@ For now, the deployed logic supports **Raydium CLMM** only, but the codebase is 
 
 A user supplies a Raydium position NFT. The program verifies everything (pool state, personal position state, token mints, etc.), takes custody of the position NFT, and begins tracking the user's state in its own account.
 
-Whenever the position goes out of the user-specified threshold range, a keeper bot can trigger a “decrease liquidity” action.
-Whenever the price comes back within the threshold, the keeper can trigger “increase liquidity”.
+When the user creates the position in the program the server would suggest a calculated threshold that would be enforced when the bot wants to add/remove the liquidity in order to allow for optimal additions and removals.
+
+Whenever the position goes out of the user-specified threshold range, the keeper bot would trigger a “decrease liquidity” action and deposits
+Whenever the price comes back within the threshold, the keeper would trigger “increase liquidity”.
 
 The movement looks like this:
 
