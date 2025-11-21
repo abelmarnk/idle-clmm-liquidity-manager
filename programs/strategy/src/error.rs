@@ -41,6 +41,7 @@ pub enum StrategyError{
     #[msg("Numerical overflow occurred")]
     NumericalOverflow,
     #[msg("Missing raydium or meteora accounts")]
-    MissingRaydiumOrMeteoraAccounts
-
+    MissingRaydiumOrMeteoraAccounts,
+    #[msg("Invalid tick threshold when creating position")]
+    InvalidTickThresholdProvided
 }

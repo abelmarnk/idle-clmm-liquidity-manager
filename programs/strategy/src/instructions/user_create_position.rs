@@ -357,8 +357,8 @@ pub fn user_create_position_from_raydium_handler(
         ctx.accounts.user_mint.to_account_info(),                
         ctx.accounts.user_state_token_account.to_account_info(),  
         ctx.accounts.token_program.to_account_info(),             
-        1, // NFT                                                       
-        0, // NFT                                                    
+        1,                                                       
+        0,                                                     
         &[],                                               
     )?;
 
