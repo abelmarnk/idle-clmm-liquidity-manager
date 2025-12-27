@@ -44,5 +44,15 @@ pub fn admin_whitelist_mint_handler(
         &ctx.accounts.mint.key(),
     );
 
+    let clock = Clock::get()?;
+
+    emit!(crate::AdminWhitelistMintEvent {
+        admin: ctx.accounts.admin.key(),
+        global_state: ctx.accounts.global_state.key(),
+        whitelist_state: ctx.accounts.whitelist_state.key(),
+        mint: ctx.accounts.mint.key(),
+        timestamp: clock.unix_timestamp,
+    });
+
     Ok(())
 }

@@ -46,21 +46,28 @@ pub fn admin_change_config_handler(
 
     let global_state = &mut ctx.accounts.global_state;
 
+    let clock = Clock::get()?;
+
     match args.change {
         AdminChange::CreditsForDecrease { value } => {
             global_state.credits_for_decrease_liquidity = value;
+            emit!(crate::CreditsForDecreaseEvent { admin: ctx.accounts.admin.key(), global_state: ctx.accounts.global_state.key(), value, timestamp: clock.unix_timestamp });
         }
         AdminChange::CreditsForIncrease { value } => {
             global_state.credits_for_increase_liquidity = value;
+            emit!(crate::CreditsForIncreaseEvent { admin: ctx.accounts.admin.key(), global_state: ctx.accounts.global_state.key(), value, timestamp: clock.unix_timestamp });
         }
         AdminChange::SolPerCredit { value } => {
             global_state.sol_per_credit = value;
+            emit!(crate::SolPerCreditEvent { admin: ctx.accounts.admin.key(), global_state: ctx.accounts.global_state.key(), value, timestamp: clock.unix_timestamp });
         }
         AdminChange::BaseDeposit { value } => {
             global_state.base_deposit = value;
+            emit!(crate::BaseDepositEvent { admin: ctx.accounts.admin.key(), global_state: ctx.accounts.global_state.key(), value, timestamp: clock.unix_timestamp });
         }
         AdminChange::FeeBasisPoints { value } => {
-            global_state.fee_basis_points = value
+            global_state.fee_basis_points = value;
+            emit!(crate::FeeBasisPointsEvent { admin: ctx.accounts.admin.key(), global_state: ctx.accounts.global_state.key(), value, timestamp: clock.unix_timestamp });
         }
         AdminChange::StateBit { bit, set } => {
             if bit.ge(&8) {
@@ -72,9 +79,11 @@ pub fn admin_change_config_handler(
             } else {
                 global_state.state &= !(1 << bit);
             }
+            emit!(crate::StateBitEvent { admin: ctx.accounts.admin.key(), global_state: ctx.accounts.global_state.key(), bit, set, timestamp: clock.unix_timestamp });
         }
         AdminChange::SetAdmin { new_admin } => {
             global_state.admin = new_admin;
+            emit!(crate::SetAdminEvent { admin: ctx.accounts.admin.key(), global_state: ctx.accounts.global_state.key(), new_admin, timestamp: clock.unix_timestamp });
         }
     }
 

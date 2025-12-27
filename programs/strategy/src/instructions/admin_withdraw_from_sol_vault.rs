@@ -49,5 +49,16 @@ pub fn admin_withdraw_sol_handler(
     ctx.accounts.sol_vault.sub_lamports(args.amount)?;
     ctx.accounts.recipient.add_lamports(args.amount)?;
     
+    let clock = Clock::get()?;
+
+    emit!(crate::AdminWithdrawSolEvent {
+        admin: ctx.accounts.admin.key(),
+        global_state: ctx.accounts.global_state.key(),
+        sol_vault: ctx.accounts.sol_vault.key(),
+        recipient: ctx.accounts.recipient.key(),
+        amount: args.amount,
+        timestamp: clock.unix_timestamp,
+    });
+
     Ok(())
 }

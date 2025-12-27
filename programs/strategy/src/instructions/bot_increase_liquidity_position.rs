@@ -114,6 +114,17 @@ pub fn keeper_increase_liquidity_position_handler<'a, 'b, 'c, 'info>(
    
     user_state_account.set_not_deployed();
 
+    let clock = Clock::get()?;
+
+    emit!(crate::KeeperIncreaseLiquidityPositionEvent {
+        keeper_account: ctx.accounts.keeper_account.key(),
+        user_state: ctx.accounts.user_state_account.key(),
+        token_amount_min: args.token_amount_min,
+        withdraw_amount: withdraw_amount,
+        is_out_of_range: is_out_of_range,
+        timestamp: clock.unix_timestamp,
+    });
+
     Ok(())
 }
 

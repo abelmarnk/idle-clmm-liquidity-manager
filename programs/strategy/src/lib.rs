@@ -9,6 +9,8 @@ pub mod helpers;
 
 pub mod instructions;
 pub use instructions::*;
+pub mod events;
+pub use events::*;
 
 #[program]
 pub mod strategy {

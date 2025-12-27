@@ -53,5 +53,15 @@ pub fn keeper_withdraw_rewards_handler(
 
     ctx.accounts.keeper_account.reset_credits();
 
+    let clock = Clock::get()?;
+
+    emit!(crate::KeeperWithdrawRewardsEvent {
+        keeper_account: ctx.accounts.keeper_account.key(),
+        recipient: ctx.accounts.recipient.key(),
+        credits,
+        amount,
+        timestamp: clock.unix_timestamp,
+    });
+
     Ok(())
 }

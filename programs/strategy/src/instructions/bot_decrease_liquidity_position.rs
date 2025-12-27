@@ -104,7 +104,28 @@ pub fn keeper_decrease_liquidity_position_handler<'a, 'b, 'c, 'info>(
     user_state.set_deployed(liquidity, deposited_amount, lp_amount, token_to_be_deployed);
 
     // Save the user state
-    user_state.set_into(user_state_account)
+    user_state.set_into(user_state_account)?;
+
+    let clock = Clock::get()?;
+
+    // token_to_be_deployed -> u8 discriminator
+    let token_deployed_u8: u8 = match token_to_be_deployed {
+        TokenDeployed::Token0 => 0,
+        TokenDeployed::Token1 => 1,
+        TokenDeployed::NoTokenDeployed => 255,
+    };
+
+    emit!(crate::KeeperDecreaseLiquidityPositionEvent {
+        keeper_account: ctx.accounts.keeper_account.key(),
+        user_state: user_state_account.key(),
+        liquidity_removed: liquidity,
+        deposited_amount,
+        lp_amount,
+        token_deployed: token_deployed_u8,
+        timestamp: clock.unix_timestamp,
+    });
+
+    Ok(())
 }
 
 #[inline(never)]

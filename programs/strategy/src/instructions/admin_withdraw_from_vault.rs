@@ -57,5 +57,19 @@ pub fn admin_withdraw_tokens_handler(
             GLOBAL_STATE, 
             &[ctx.accounts.global_state.bump]
         ]],
-    )
+    )?;
+
+    let clock = Clock::get()?;
+
+    emit!(crate::AdminWithdrawTokensEvent {
+        admin: ctx.accounts.admin.key(),
+        global_state: ctx.accounts.global_state.key(),
+        source_token_account: ctx.accounts.source_token_account.key(),
+        destination_token_account: ctx.accounts.destination_token_account.key(),
+        mint: ctx.accounts.mint.key(),
+        amount: args.amount,
+        timestamp: clock.unix_timestamp,
+    });
+
+    Ok(())
 }

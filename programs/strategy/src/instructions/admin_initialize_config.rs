@@ -77,5 +77,20 @@ pub fn admin_initialize_config_handler(
         ctx.bumps.sol_vault,
     );
 
+    let clock = Clock::get()?;
+
+    emit!(crate::AdminInitializeConfigEvent {
+        admin: ctx.accounts.admin.key(),
+        global_state: ctx.accounts.global_state.key(),
+        sol_vault: ctx.accounts.sol_vault.key(),
+        state: args.state,
+        credits_for_decrease_liquidity: args.credits_for_decrease_liquidity,
+        credits_for_increase_liquidity: args.credits_for_increase_liquidity,
+        sol_per_credit: args.sol_per_credit,
+        base_deposit: args.base_deposit,
+        fee_basis_points: args.fee_basis_points,
+        timestamp: clock.unix_timestamp,
+    });
+
     Ok(())
 }

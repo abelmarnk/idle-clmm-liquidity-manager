@@ -59,6 +59,9 @@ pub fn user_close_position_handler<'a, 'b, 'c, 'info>(
         StrategyError::UnauthorizedUser
     );
 
+    // capture whether the position was deployed before closing (we'll emit it)
+    let was_deployed = ctx.accounts.user_state.is_deployed();
+
     if ctx.accounts.user_state.is_deployed(){
         require_gte!(
             ctx.remaining_accounts.len(),
@@ -119,7 +122,20 @@ pub fn user_close_position_handler<'a, 'b, 'c, 'info>(
         )?;
     }
 
-    transfer_user_nft_and_close_account(&ctx)
+    transfer_user_nft_and_close_account(&ctx)?;
+
+    let clock = Clock::get()?;
+
+    emit!(crate::UserClosePositionEvent {
+        user: ctx.accounts.user.key(),
+        user_state: ctx.accounts.user_state.key(),
+        nft_mint: ctx.accounts.nft_mint.key(),
+        token_amount_min: args.token_amount_min,
+        closed_was_deployed: was_deployed,
+        timestamp: clock.unix_timestamp,
+    });
+
+    Ok(())
 }
 
 pub fn transfer_user_nft_and_close_account(

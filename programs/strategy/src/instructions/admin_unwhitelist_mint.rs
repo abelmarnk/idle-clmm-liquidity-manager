@@ -34,5 +34,15 @@ pub fn admin_unwhitelist_mint_handler(
         StrategyError::UnauthorizedAction
     );
 
+    let clock = Clock::get()?;
+
+    emit!(crate::AdminUnwhitelistMintEvent {
+        admin: ctx.accounts.admin.key(),
+        global_state: ctx.accounts.global_state.key(),
+        whitelist_state: ctx.accounts.whitelist_state.key(),
+        mint: ctx.accounts.whitelist_state.mint,
+        timestamp: clock.unix_timestamp,
+    });
+
     Ok(())
 }

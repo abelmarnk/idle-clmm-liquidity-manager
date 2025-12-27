@@ -34,5 +34,14 @@ pub fn create_keeper_account_handler(
         &ctx.accounts.keeper.key(),
     );
 
+    let clock = Clock::get()?;
+
+    emit!(crate::KeeperCreateEvent {
+        payer: ctx.accounts.payer.key(),
+        keeper_account: ctx.accounts.keeper_account.key(),
+        keeper: ctx.accounts.keeper.key(),
+        timestamp: clock.unix_timestamp,
+    });
+
     Ok(())
 }
