@@ -9,7 +9,7 @@ skip-lint = false
 upgradeable = true
 
 [programs.localnet]
-strategy = "DYRsMLWUQ5VRCqig4xxsU5h4ZhaPFe6zZwGkpLQ6d9dp"
+strategy = "4jCQAmUGnZpFGHhZkMQ53PUYRPpzXEA7QzsbiK6Zh6P3"
 
 [registry]
 url = "https://api.apr.dev"

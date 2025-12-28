@@ -5,8 +5,8 @@ import * as meteora from "@meteora-ag/vault-sdk"
 import { Program } from "@coral-xyz/anchor";
 import { PublicKey, Keypair, clusterApiUrl, SystemProgram, Transaction, sendAndConfirmTransaction, AccountMeta, Connection } from "@solana/web3.js";
 import { Strategy } from "../target/types/strategy";
-import vaultIDL  from "../target/idl/meteora.json"
-import { Vault } from "../target/types/meteora"
+import vaultIDL  from "../tests/idl/meteora.json"
+import { Vault } from "../tests/types/meteora"
 import { ASSOCIATED_PROGRAM_ID, TOKEN_PROGRAM_ID, } from "@coral-xyz/anchor/dist/cjs/utils/token";
 import {ASSOCIATED_TOKEN_PROGRAM_ID, createAccount, createAssociatedTokenAccount, createAssociatedTokenAccountIdempotent, createMint, getAssociatedTokenAddressSync, mintTo, TOKEN_2022_PROGRAM_ID, getMint} from "@solana/spl-token";
 import { ApiV3PoolInfoConcentratedItem, ClmmKeys, ComputeClmmPoolInfo, DEV_API_URLS, DEVNET_PROGRAM_ID, MEMO_PROGRAM_ID, PoolUtils, Price, publicKey, Raydium, RENT_PROGRAM_ID, ReturnTypeFetchMultiplePoolTickArrays, sleep, SYSTEM_PROGRAM_ID, TickArrayBitmap, TickUtils, TransferAmountFee, TxVersion } from "@raydium-io/raydium-sdk-v2";
@@ -18,7 +18,7 @@ describe("strategy", () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const provider = anchor.getProvider();
   const program = anchor.workspace.strategy as Program<Strategy>;
-  const meteoraProgram = new anchor.Program(vaultIDL as anchor.Idl, provider) as Program<Vault>;
+  const meteoraProgram = new anchor.Program(vaultIDL as anchor.Idl, provider)as Program<Vault>;
   
   let raydium: Raydium | undefined
 
@@ -92,7 +92,10 @@ describe("strategy", () => {
   let globalStateLp0Account:PublicKey;
   let globalStateLp1Account:PublicKey;
 
-  const adminKeypair = provider.wallet.payer;
+  const adminKeypairJson = JSON.parse((fs.readFileSync("./tests/keys/admin.json")).toString());
+  const adminKeypair =  Keypair.fromSecretKey(new Uint8Array(adminKeypairJson));
+  
+  provider.wallet.payer = adminKeypair;
 
   const [globalStatePda, globalStateBump] = PublicKey.findProgramAddressSync(
       [Buffer.from(GLOBAL_STATE_SEED)],
@@ -111,7 +114,7 @@ describe("strategy", () => {
     program.programId
   );
 
-  const userKeypairJson = JSON.parse((fs.readFileSync("./tests/user.json")).toString());
+  const userKeypairJson = JSON.parse((fs.readFileSync("./tests/keys/user.json")).toString());
   const userKeypair =  Keypair.fromSecretKey(new Uint8Array(userKeypairJson));
   
   let userStateToken0Account:PublicKey;
@@ -652,7 +655,7 @@ describe("strategy", () => {
 
   before(async () => {
 
-    [mint0, mint1] =  [await createNewMint(), await createNewMint()];
+    [mint0, mint1] = [await createNewMint(), await createNewMint()];
 
     const mint0Base58 = mint0.toBase58();
     const mint1Base58 = mint1.toBase58();
@@ -791,7 +794,7 @@ describe("strategy", () => {
   it("Initialize config success", async () => {
 
       try {
-        const bootstrapKeySecret = JSON.parse(fs.readFileSync("./tests/bootstrap-key.json", "utf8"));
+        const bootstrapKeySecret = JSON.parse(fs.readFileSync("./tests/keys/bootstrap-key.json", "utf8"));
 
         const bootstrapKeypair = Keypair.fromSecretKey(Uint8Array.from(bootstrapKeySecret));
 
@@ -1589,7 +1592,9 @@ describe("strategy", () => {
       await program.methods.
         keeperDecreaseLiquidityPosition({lpAmountMin:new BN(0)}).
         accounts({
-          keeperAccount:keeperStatePda
+          keeperAccount:keeperStatePda,
+          mint0Whitelist: getWhitelistPda(mint0),
+          mint1Whitelist: getWhitelistPda(mint1),
         }).
         remainingAccounts(
           remainingAccounts
@@ -1650,7 +1655,9 @@ describe("strategy", () => {
       await program.methods.
         keeperDecreaseLiquidityPosition({lpAmountMin:new BN(0)}).
         accounts({
-          keeperAccount:keeperStatePda
+          keeperAccount:keeperStatePda,
+          mint0Whitelist: getWhitelistPda(mint0),
+          mint1Whitelist: getWhitelistPda(mint1),
         }).
         remainingAccounts(
           remainingAccounts
@@ -1708,7 +1715,9 @@ describe("strategy", () => {
       await program.methods.
         keeperDecreaseLiquidityPosition({lpAmountMin:new BN(0)}).
         accounts({
-          keeperAccount:keeperStatePda
+          keeperAccount:keeperStatePda,
+          mint0Whitelist: getWhitelistPda(mint0),
+          mint1Whitelist: getWhitelistPda(mint1),
         }).
         remainingAccounts(
           remainingAccounts
@@ -1765,7 +1774,9 @@ describe("strategy", () => {
       await program.methods.
         keeperDecreaseLiquidityPosition({lpAmountMin:new BN(0)}).
         accounts({
-          keeperAccount:keeperStatePda
+          keeperAccount:keeperStatePda,
+          mint0Whitelist: getWhitelistPda(mint0),
+          mint1Whitelist: getWhitelistPda(mint1),
         }).
         remainingAccounts(
           remainingAccounts
@@ -1833,7 +1844,9 @@ describe("strategy", () => {
       await program.methods.
         keeperDecreaseLiquidityPosition({lpAmountMin:new BN(0)}).
         accounts({
-          keeperAccount:keeperStatePda
+          keeperAccount:keeperStatePda,
+          mint0Whitelist: getWhitelistPda(mint0),
+          mint1Whitelist: getWhitelistPda(mint1),
         }).
         remainingAccounts(
           remainingAccounts
@@ -1857,6 +1870,82 @@ describe("strategy", () => {
 
     }
   }); 
+
+  it("Keeper decrease liquidity failure: Mint not whitelisted", async () => {
+    try {
+      // Create two new mints which are NOT the pool mints and whitelist them
+      const wrongMint0 = await createNewMint();
+      const wrongMint1 = await createNewMint();
+
+      // Whitelist the wrong mints (so the whitelist accounts exist but point to different mints)
+      await program.methods
+        .adminWhitelistMint()
+        .accounts({
+          globalState: globalStatePda,
+          admin: adminKeypair.publicKey,
+          mint: wrongMint0,
+        })
+        .signers([adminKeypair])
+        .rpc();
+
+      await program.methods
+        .adminWhitelistMint()
+        .accounts({
+          globalState: globalStatePda,
+          admin: adminKeypair.publicKey,
+          mint: wrongMint1,
+        })
+        .signers([adminKeypair])
+        .rpc();
+
+      const remainingAccounts = buildRemainingAccountsForKeeperDecrease(
+        {
+          vault: meteoraAccounts.vault0!,
+          tokenVault: meteoraAccounts.tokenVault0!,
+          lpMint: meteoraAccounts.lpMint0!,
+          globalStateTokenAccount: globalStateToken0Account,
+          globalStateLpAccount: globalStateLp0Account,
+          meteoraProgramId: meteoraProgram.programId,
+        },
+        {
+          nftOwner: userStatePda,
+          nftAccount: userStateNftAccount,
+          personalPosition: raydiumAccounts.personalPosition!,
+          poolState: raydiumAccounts.poolState!,
+          protocolPosition: raydiumAccounts.protocolPosition!,
+          tokenVault0: raydiumAccounts.tokenVault0!,
+          tokenVault1: raydiumAccounts.tokenVault1!,
+          tickArrayLower: raydiumAccounts.tickArrayLower!,
+          tickArrayUpper: raydiumAccounts.tickArrayUpper!,
+          recipientTokenAccount0: globalStateToken0Account,
+          recipientTokenAccount1: globalStateToken1Account,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          tokenProgram2022: TOKEN_2022_PROGRAM_ID,
+          memoProgram: MEMO_PROGRAM_ID,
+          vault0Mint: mint0,
+          vault1Mint: mint1,
+          tickArrayBitmap: raydiumAccounts.tickArrayBitmap!,
+          raydiumProgramId: raydiumAccounts.programId!,
+        },
+        globalStatePda
+      );
+
+      await program.methods
+        .keeperDecreaseLiquidityPosition({ lpAmountMin: new BN(0) })
+        .accounts({
+          keeperAccount: keeperStatePda,
+          mint0Whitelist: getWhitelistPda(wrongMint0),
+          mint1Whitelist: getWhitelistPda(wrongMint1),
+        })
+        .remainingAccounts(remainingAccounts)
+        .rpc();
+
+      assert.fail("This should have failed");
+    } catch (error) {
+      const msg: string = error.toString().toLowerCase();
+      assert.ok(msg.includes("destinationmintnotwhitelisted"), `Unexpected error: ${msg}`);
+    }
+  });
 
   it("keeper decrease liquidity success", async () => {
 
@@ -1921,6 +2010,8 @@ describe("strategy", () => {
       .keeperDecreaseLiquidityPosition({ lpAmountMin: new BN(0) })
       .accounts({
         keeperAccount: keeperStatePda,
+        mint0Whitelist: getWhitelistPda(mint0),
+        mint1Whitelist: getWhitelistPda(mint1),
       })
       .remainingAccounts(remainingAccounts)
       
@@ -2037,6 +2128,8 @@ describe("strategy", () => {
         .keeperDecreaseLiquidityPosition({ lpAmountMin: new BN(0) })
         .accounts({
           keeperAccount: keeperStatePda,
+          mint0Whitelist: getWhitelistPda(mint0),
+          mint1Whitelist: getWhitelistPda(mint1),
         })
         .remainingAccounts(remainingAccounts)
         
@@ -2654,7 +2747,9 @@ describe("strategy", () => {
     await program.methods
       .keeperDecreaseLiquidityPosition({ lpAmountMin: new BN(0) })
       .accounts({
-        keeperAccount: keeperStatePda
+        keeperAccount: keeperStatePda,
+        mint0Whitelist: getWhitelistPda(mint0),
+        mint1Whitelist: getWhitelistPda(mint1),        
       })
       .remainingAccounts(remainingAccounts)
       .rpc();
