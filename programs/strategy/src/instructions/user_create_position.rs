@@ -1,6 +1,3 @@
-// (old implementation removed) -- keeping the active implementation below
-
-// /*
 use anchor_lang::{prelude::*, system_program::{Transfer, transfer}};
 use anchor_spl::{associated_token::AssociatedToken, token_interface::{Mint, TokenAccount, TokenInterface}};
 use raydium_amm_v3::{states::{PersonalPositionState, PoolState}};
@@ -8,8 +5,6 @@ use raydium_amm_v3::{states::{PersonalPositionState, PoolState}};
 use crate::{constants::USER_STATE, helpers::transfer_token, state::{GlobalState, WhitelistState}};
 use crate::state::UserState;
 use crate::error::StrategyError;
-
-// const RAYDIUM_CLMM_PROGRAM_ID:Pubkey = pubkey!("DRayAUgENGQBKVaX8owNhgzkEDyoHTGVEGHVJT1E9pfH");
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
 pub struct UserCreatePositionFromRaydiumArgs{
@@ -193,7 +188,6 @@ pub fn user_create_position_from_raydium_handler(
         ctx.accounts.global_state.base_deposit   
     )?;
 
-    // Emit an event signalling a successful create position
     let clock = Clock::get()?;
 
     emit!(crate::UserCreatePositionEvent {
@@ -210,5 +204,3 @@ pub fn user_create_position_from_raydium_handler(
 
     Ok(())
 }
-
-// */

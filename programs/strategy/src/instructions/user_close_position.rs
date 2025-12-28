@@ -12,6 +12,9 @@ pub struct UserClosePositionArgs{
 }
 
 #[derive(Accounts)]
+
+// Here we don't bother checking the whitelist mints to allow the user's account 
+// to be closed(if at all they are now using mints that are longer supported)
 pub struct UserClosePositionAccounts<'info> {
 
     /// The user owning this position
@@ -59,7 +62,6 @@ pub fn user_close_position_handler<'a, 'b, 'c, 'info>(
         StrategyError::UnauthorizedUser
     );
 
-    // capture whether the position was deployed before closing (we'll emit it)
     let was_deployed = ctx.accounts.user_state.is_deployed();
 
     if ctx.accounts.user_state.is_deployed(){

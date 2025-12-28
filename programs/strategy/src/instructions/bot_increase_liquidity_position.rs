@@ -11,6 +11,8 @@ pub struct KeeperIncreaseLiquidityPositionArgs{
 }
 
 #[derive(Accounts)]
+// Here we don't bother checking the whitelist mints to allow the user's position 
+// to be closed(if at all they are now using mints that are longer supported)
 pub struct KeeperIncreaseLiquidityPositionAccounts<'info>{
     /// The keeper state, stores the keeper's key and credits
     #[account(
@@ -347,89 +349,3 @@ pub fn increase_liquidity<'info>(
 
     Ok(!is_within_range)
 }
-
-/*
-let (token_amount_0, token_amount_1, base_flag) =
-        {
-            let pool_state_data = &pool_state_account.
-            try_borrow_data()?
-            [8..]; // Skip the discriminator
-
-            // PoolState is `zero_copy`
-            let pool_state = bytemuck::from_bytes::<PoolState>(pool_state_data);
-            
-            require!(
-                force_pull ||
-                user_state_account.is_tick_within_range(pool_state.tick_current),
-                StrategyError::TickNotWithinRange
-            );
-
-            let other_amount = if force_pull {u64::MAX} else {0};
-
-            // Get the arguments for the raydium instruction
-            let global_token_account_0 = &raydium_accounts[RAYDIUM_INCREASE_GLOBAL_STATE_TOKEN_ACCOUNT_0_OFFSET];
-            let global_token_account_1 = &raydium_accounts[RAYDIUM_INCREASE_GLOBAL_STATE_TOKEN_ACCOUNT_1_OFFSET];
-
-            // Though we expect the tick to come back within range we still expect it to be out of
-            // range for the user's position but heading there under that assumption
-            // it would be the case that only one token is accepted the original token deposited,
-            // but that may not be the case, read the other comments below
-            match user_state_account.token_deployed{
-                TokenDeployed::Token0 => {
-                    // We only check the address here, we have checked ownership of the token account in
-                    // the withdraw handler
-                    require_keys_eq!(
-                        *global_token_account_0.key,
-                        *expected_token_account.key,
-                        StrategyError::InvalidTokenAccount
-                    );
-                    // Ensure the token account belongs to the global state
-                    if !is_ata(
-                        global_state_account.key, global_token_account_1.key,
-                        &pool_state.token_mint_1
-                    ){
-                        return Err(StrategyError::InvalidTokenAccount.into());
-                    }
-                    (token_amount,
-                        other_amount, // The value of zero only works if the bot is guaranteed to act
-                           // fast enough to put the token 0 back in before it goes into the user's
-                           // raydium range, if they do then this would always work, if they don't 
-                           // then it would not be possible for the bot to deposit the liquidity
-                           // as raydium would require some of token 1 to be deposited, but setting 0
-                           // here makes that not possible, it can be relaxed by setting it to u64::max
-                           // and providing token 1 from the reserves while the reserves would hold
-                           // the remaning token0, since the token0 would be equivalent or greater in value
-                           // it would not result in a loss to the protocol. 
-                        true)
-                },
-                TokenDeployed::Token1 => {
-                    // We only check the address here, we have checked ownership of the token account in
-                    // the withdraw handler
-                    require_keys_eq!(
-                        *global_token_account_1.key,
-                        *expected_token_account.key,
-                        StrategyError::InvalidTokenAccount
-                    );
-                    // Ensure the token account belongs to the global state
-                    if !is_ata(
-                        global_state_account.key, global_token_account_0.key,
-                        &pool_state.token_mint_0
-                    ){
-                        return Err(StrategyError::InvalidTokenAccount.into());
-                    }
-                    (other_amount, // The value of zero only works if the bot is guaranteed to act
-                        // fast enough to put the token1 back in before it goes into the user's
-                        // raydium range, if they do then this would always work, if they don't 
-                        // then it would not be possible for the bot to deposit the liquidity
-                        // as raydium would require some of token0 to be deposited, but setting 0
-                        // here makes that not possible, it can be relaxed by setting it to u64::max
-                        // and providing token0 from the reserves while the reserves would hold
-                        // the remaning token1, since the token1 would be equivalent or greater in value
-                        // it would not result in a loss to the protocol.
-                     token_amount, 
-                     false)
-                },
-                TokenDeployed::NoTokenDeployed => unreachable!()
-            }
-        };
-*/

@@ -3,7 +3,7 @@ use std::ops::{Add, Sub};
 use anchor_lang::{prelude::*, solana_program::{instruction::Instruction, program::invoke_signed}};
 use anchor_spl::token_interface::{TokenAccount};
 use raydium_amm_v3::{ID as RAYDIUM_CLMM_PROGRAM_ID, states::{PersonalPositionState, PoolState, TickArrayBitmapExtension}};
-use crate::{constants::{GLOBAL_STATE, METEORA_DEPOSIT_GLOBAL_STATE_ACCOUNT_OFFSET, METEORA_DEPOSIT_GLOBAL_STATE_LP_ACCOUNT_OFFSET, METEORA_DEPOSIT_GLOBAL_STATE_TOKEN_ACCOUNT_OFFSET, METEORA_DEPOSIT_LIQUIDITY_ACCOUNTS_COUNT, METEORA_DEPOSIT_LP_MINT_ACCOUNT_OFFSET, METEORA_VAULT_DEPOSIT_DISCRIMINATOR, METEORA_VAULT_PROGRAM, RAYDIUM_DECREASE_LIQUIDITY_V2_ACCOUNTS_COUNT, RAYDIUM_DECREASE_LIQUIDITY_V2_DISCRIMINATOR, RAYDIUM_DECREASE_POOL_STATE_ACCOUNT_OFFSET, RAYDIUM_DECREASE_POSITION_STATE_ACCOUNT_OFFSET, RAYDIUM_DECREASE_USER_STATE_ACCOUNT_OFFSET, RAYDIUM_DECREASE_GLOBAL_STATE_TOKEN_ACCOUNT_0_OFFSET, RAYDIUM_DECREASE_GLOBAL_STATE_TOKEN_ACCOUNT_1_OFFSET, USER_STATE}, error::StrategyError, helpers::{build_decrease_liquidity_v2_metas, build_meteora_deposit_withdraw_metas, is_ata}, state::{GlobalState, KeeperState, LpTokenState, TokenDeployed, UserState}};
+use crate::{constants::{GLOBAL_STATE, METEORA_DEPOSIT_GLOBAL_STATE_ACCOUNT_OFFSET, METEORA_DEPOSIT_GLOBAL_STATE_LP_ACCOUNT_OFFSET, METEORA_DEPOSIT_GLOBAL_STATE_TOKEN_ACCOUNT_OFFSET, METEORA_DEPOSIT_LIQUIDITY_ACCOUNTS_COUNT, METEORA_DEPOSIT_LP_MINT_ACCOUNT_OFFSET, METEORA_VAULT_DEPOSIT_DISCRIMINATOR, METEORA_VAULT_PROGRAM, RAYDIUM_DECREASE_LIQUIDITY_V2_ACCOUNTS_COUNT, RAYDIUM_DECREASE_LIQUIDITY_V2_DISCRIMINATOR, RAYDIUM_DECREASE_POOL_STATE_ACCOUNT_OFFSET, RAYDIUM_DECREASE_POSITION_STATE_ACCOUNT_OFFSET, RAYDIUM_DECREASE_USER_STATE_ACCOUNT_OFFSET, RAYDIUM_DECREASE_GLOBAL_STATE_TOKEN_ACCOUNT_0_OFFSET, RAYDIUM_DECREASE_GLOBAL_STATE_TOKEN_ACCOUNT_1_OFFSET, USER_STATE}, error::StrategyError, helpers::{build_decrease_liquidity_v2_metas, build_meteora_deposit_withdraw_metas, is_ata}, state::{GlobalState, KeeperState, LpTokenState, TokenDeployed, UserState, WhitelistState}};
 
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
@@ -19,6 +19,12 @@ pub struct KeeperDecreaseLiquidityPositionAccounts<'info>{
         mut
     )]
     keeper_account:Account<'info, KeeperState>,
+
+    /// Whitelist for the mint 0 in the pool
+    mint_0_whitelist:Account<'info, WhitelistState>,
+
+    /// Whitelist for the mint 1 in the pool
+    mint_1_whitelist:Account<'info, WhitelistState>,
 
     // Here we don't bother passing in the accounts used by the called programs
     // we pass in all the accounts through remaining accounts
@@ -49,6 +55,27 @@ pub fn keeper_decrease_liquidity_position_handler<'a, 'b, 'c, 'info>(
     );    
 
     let raydium_accounts = &ctx.remaining_accounts[(METEORA_DEPOSIT_LIQUIDITY_ACCOUNTS_COUNT)..];
+
+    // Verify the pool's mints are whitelisted (compare pool mints against provided whitelist states)
+    {
+        let pool_state_ref = &raydium_accounts[RAYDIUM_DECREASE_POOL_STATE_ACCOUNT_OFFSET].
+            try_borrow_data()?
+            [8..]; // Skip discriminator
+
+        let pool_state = bytemuck::from_bytes::<PoolState>(pool_state_ref);
+
+        require_keys_eq!(
+            pool_state.token_mint_0,
+            ctx.accounts.mint_0_whitelist.mint,
+            StrategyError::DestinationMintNotWhitelisted
+        );
+
+        require_keys_eq!(
+            pool_state.token_mint_1,
+            ctx.accounts.mint_1_whitelist.mint,
+            StrategyError::DestinationMintNotWhitelisted
+        );
+    }
 
     let user_state_account = &raydium_accounts[RAYDIUM_DECREASE_USER_STATE_ACCOUNT_OFFSET];
 
