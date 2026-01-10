@@ -159,6 +159,7 @@ pub struct UserCreatePositionEvent {
     pub user: Pubkey,
     pub user_state: Pubkey,
     pub user_mint: Pubkey,
+    pub pool: Pubkey,
     pub tick_lower_index_in_threshold: i32,
     pub tick_upper_index_in_threshold: i32,
     pub tick_lower_index_out_threshold: i32,

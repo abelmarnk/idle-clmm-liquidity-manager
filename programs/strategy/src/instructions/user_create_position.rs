@@ -195,6 +195,7 @@ pub fn user_create_position_from_raydium_handler(
         user: ctx.accounts.user.key(),
         user_state: ctx.accounts.user_state.key(),
         user_mint: ctx.accounts.user_mint.key(),
+        pool: ctx.accounts.position_state.pool_id,
         tick_lower_index_in_threshold: args.tick_lower_index_in_threshold,
         tick_upper_index_in_threshold: args.tick_upper_index_in_threshold,
         tick_lower_index_out_threshold: args.tick_lower_index_out_threshold,
