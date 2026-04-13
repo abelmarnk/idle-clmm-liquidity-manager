@@ -27,6 +27,10 @@ pub fn transfer_token<'info>(
     signer_seeds: &[&[&[u8]]],
 ) -> Result<()> {
     if amount.ne(&0) {
+        // We don't bother checking for extension related stuff like transfer fees, such mints would not be whitelisted
+        // in the first place, additionally the only place where this helper is used(or any transfers whatsoever are made) 
+        // with mints that could possibly have these extensions is when the admin withdraws(in that case they would account 
+        // for it themselves), the other cases are raydium NFTs which have no such things.
         transfer_checked(
             CpiContext::new_with_signer(
                 token_program,

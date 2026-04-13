@@ -555,7 +555,7 @@ describe("strategy", () => {
       { pubkey: raydium.nftAccount, isWritable: false, isSigner: false },
       { pubkey: raydium.personalPosition, isWritable: true, isSigner: false },
       { pubkey: raydium.poolState, isWritable: true, isSigner: false },
-      { pubkey: raydium.protocolPosition, isWritable: false, isSigner: false },
+      { pubkey: raydium.protocolPosition, isWritable: true, isSigner: false },
       { pubkey: raydium.tokenVault0, isWritable: true, isSigner: false },
       { pubkey: raydium.tokenVault1, isWritable: true, isSigner: false },
       { pubkey: raydium.tickArrayLower, isWritable: true, isSigner: false },
@@ -567,7 +567,7 @@ describe("strategy", () => {
       { pubkey: raydium.memoProgram, isWritable: false, isSigner: false },
       { pubkey: raydium.vault0Mint, isWritable: false, isSigner: false },
       { pubkey: raydium.vault1Mint, isWritable: false, isSigner: false },
-      { pubkey: raydium.tickArrayBitmap, isWritable: false, isSigner: false },
+      { pubkey: raydium.tickArrayBitmap, isWritable: true, isSigner: false },
     );
 
     for (let counter = 0; counter < metas.length; counter++){
@@ -629,7 +629,7 @@ describe("strategy", () => {
       { pubkey: globalStatePda, isWritable: true, isSigner: false },
       { pubkey: raydium.nftAccount, isWritable: true, isSigner: false },
       { pubkey: raydium.poolState, isWritable: true, isSigner: false },
-      { pubkey: raydium.protocolPosition, isWritable: false, isSigner: false },
+      { pubkey: raydium.protocolPosition, isWritable: true, isSigner: false },
       { pubkey: raydium.personalPosition, isWritable: true, isSigner: false },
       { pubkey: raydium.tickArrayLower, isWritable: true, isSigner: false },
       { pubkey: raydium.tickArrayUpper, isWritable: true, isSigner: false },
@@ -641,7 +641,7 @@ describe("strategy", () => {
       { pubkey: raydium.tokenProgram2022, isWritable: false, isSigner: false },
       { pubkey: raydium.vault0Mint, isWritable: false, isSigner: false },
       { pubkey: raydium.vault1Mint, isWritable: false, isSigner: false },
-      { pubkey: raydium.tickArrayBitmap, isWritable: false, isSigner: false },
+      { pubkey: raydium.tickArrayBitmap, isWritable: true, isSigner: false },
     );
 
     for (let counter = 0; counter < metas.length; counter++){

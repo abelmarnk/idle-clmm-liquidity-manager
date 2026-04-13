@@ -149,6 +149,40 @@ Right now, only Raydium is included.
 
 ---
 
+## Development
+
+### Prerequisites
+
+- [Rust](https://rustup.rs/) (stable)
+- [Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools) v1.18+
+- [Anchor CLI](https://www.anchor-lang.com/docs/installation) v0.31+
+- [Yarn](https://yarnpkg.com/)
+
+### Build
+
+Compile the program and generate the IDL:
+
+```bash
+anchor build
+```
+
+The compiled `.so` and IDL are written to `target/deploy/` and `target/idl/` respectively.
+
+### Run the tests
+
+The test suite runs against a **devnet** cluster (configured in `Anchor.toml`). Make sure `~/.config/solana/id.json` exists and is funded with devnet SOL before running.
+
+```bash
+# Run all tests (deploys the program if not already deployed)
+anchor test
+
+# Skip redeployment - use the existing on-chain program
+anchor test --skip-deploy
+```
+
+
+---
+
 ## Current Status
 
 * Raydium support: **working**
